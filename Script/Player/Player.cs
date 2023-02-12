@@ -22,21 +22,22 @@ public class Player : MonoBehaviour
     {
         InputMouse();
         InputButtons();
-        InputUnitMousePosition();
     }
 
     public void InputMouse()
     {
         ray = Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 15f));
-        if (Input.GetMouseButtonDown(0))             //¿Þ
+        if (Physics.Raycast(ray, out hit, float.MaxValue, mask))
         {
-            if (Physics.Raycast(ray, out hit, float.MaxValue, mask))
+            unit.SetMousePositon(hit.point);
+
+            if (Input.GetMouseButtonDown(0))             //¿Þ
             {
                 if (isAkey)
                 {
 
                 }
-                else if(isSkill != -1)
+                else if (isSkill != -1)
                 {
                     UnitSkills(isSkill, hit);
                 }
@@ -44,20 +45,16 @@ public class Player : MonoBehaviour
                 {
 
                 }
-            }
-            
-            isAkey = false;
-            isSkill = -1;
-        }
-        else if (Input.GetMouseButtonDown(1))        //¿ì
-        {
-            ray = Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 15f));
 
-            if (Physics.Raycast(ray, out hit, float.MaxValue, mask))
+
+                isAkey = false;
+                isSkill = -1;
+            }
+            else if (Input.GetMouseButtonDown(1))        //¿ì
             {
                 if (isAkey)
                 {
-                    if(hit.transform.GetComponent<Unit>() != null)
+                    if (hit.transform.GetComponent<Unit>() != null)
                     {
 
                     }
@@ -77,11 +74,13 @@ public class Player : MonoBehaviour
                         unit.MovePoint(ZeroY(hit.point));
                     }
                 }
-            }
 
-            isAkey = false;
-            isSkill = -1;
+
+                isAkey = false;
+                isSkill = -1;
+            }
         }
+
     }
 
     public void InputButtons()
@@ -151,13 +150,6 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void InputUnitMousePosition()
-    {
-        if (Physics.Raycast(ray, out hit, float.MaxValue, mask))
-        {
-            unit.SetMousePositon(hit.point);
-        }
-    }
 
     public Vector3 ZeroY(Vector3 vector)
     {

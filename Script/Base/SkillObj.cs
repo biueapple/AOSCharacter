@@ -32,12 +32,18 @@ public class SkillObj : MonoBehaviour
             else
             {
                 transform.position = Vector3.MoveTowards(transform.position, direction, speed * Time.deltaTime);
+                if(transform.position == direction)
+                {
+                    SkillEnd();
+                }
             }
         }
     }
 
     public void TargetSkill(Unit p, Unit unit, float s,int i)
     {
+        transform.SetParent(null, true);
+
         target = unit;
         speed = s;
         index = i;
@@ -48,6 +54,8 @@ public class SkillObj : MonoBehaviour
     }
     public void NoneTargetSkill(Unit p, Vector3 vector,float range, float s,int teamNum, bool enemy,int i, int c)
     {
+        transform.SetParent(null, true);
+
         direction = transform.position + vector * range;
         speed = s;
         this.teamNum = teamNum;
@@ -62,43 +70,46 @@ public class SkillObj : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.GetComponent<Unit>() != null)
+        
+        if(other.transform.CompareTag("Unit"))
         {
-            if(target != null)
+            Unit unit = IsUnit(other.transform);
+            if (unit != null)
             {
-                if(other.name.Equals(target.name))
+                if (target != null)
                 {
-                    CallHitBack(other.GetComponent<Unit>());
-                    count--;
-                }
-            }
-            else
-            {
-                if(isEnemy)
-                {
-                    if(other.GetComponent<Unit>().teamNum != teamNum)
+                    if (unit.name.Equals(target.name))
                     {
-                        CallHitBack(other.GetComponent<Unit>());
+                        CallHitBack(unit);
                         count--;
                     }
                 }
                 else
                 {
-                    if(other.GetComponent<Unit>().teamNum == teamNum)
+                    if (isEnemy)
                     {
-                        CallHitBack(other.GetComponent<Unit>());
-                        count--;
+                        if (unit.teamNum != teamNum)
+                        {
+                            CallHitBack(unit);
+                            count--;
+                        }
+                    }
+                    else
+                    {
+                        if (unit.teamNum == teamNum)
+                        {
+                            CallHitBack(unit);
+                            count--;
+                        }
                     }
                 }
             }
         }
+        
 
         if(count <= 0)
         {
-            gameObject.SetActive(false);
-            transform.SetParent(parent.transform, false);
-            transform.localEulerAngles = Vector3.zero;
-            transform.localPosition = Vector3.zero;
+            SkillEnd();
         }
     }
 
@@ -122,5 +133,36 @@ public class SkillObj : MonoBehaviour
                 parent.SkillHitCallBack_3(unit);
                 break;
         }
+    }
+
+    private void SkillEnd()
+    {
+        isMove = false;
+        //gameObject.SetActive(false);
+        //transform.SetParent(parent.transform, false);
+        //transform.localEulerAngles = Vector3.zero;
+        //transform.localPosition = Vector3.zero;
+    }
+
+    private Unit IsUnit(Transform tf)
+    {
+        Transform transform = tf;
+
+        while(true)
+        {
+            if (transform.GetComponent<Unit>() != null)
+            {
+                return transform.GetComponent<Unit>();
+            }
+
+
+            if (transform.parent == null)
+            {
+                break;
+            }
+
+            transform = transform.parent;
+        }
+        return null;
     }
 }

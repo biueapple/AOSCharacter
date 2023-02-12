@@ -11,6 +11,8 @@ public class Unit : MonoBehaviour
     protected float attackDelay;
     public ColliderBack nomalAttackColl;
     public ColliderBack[] Colliders;
+    public float[] ranges = new float[4];
+    public float[] speeds = new float[4];
 
     public SkillObj[] skills;
 
@@ -18,6 +20,7 @@ public class Unit : MonoBehaviour
     protected Coroutine Coroutine_CC;              //cc기에 걸려 아무것도 못함
     protected bool isCC;
     protected Coroutine FindTargetCoroutine;             //타게팅 한명만 찾기 (스킬찾기)
+    protected Coroutine CompulsionMoveCorutine;
 
     public int teamNum;
 
@@ -98,7 +101,7 @@ public class Unit : MonoBehaviour
         }
     }
 
-    public void UseSkill_0(RaycastHit hit)
+    public virtual void UseSkill_0(RaycastHit hit)
     {
         ViewOff();
         if (!isCC && (stat.GetCool(0) <= 0))
@@ -112,7 +115,7 @@ public class Unit : MonoBehaviour
     {
 
     }
-    public void UseSkill_1(RaycastHit hit)
+    public virtual void UseSkill_1(RaycastHit hit)
     {
         ViewOff();
         if (!isCC && (stat.GetCool(1) <= 0))
@@ -126,7 +129,7 @@ public class Unit : MonoBehaviour
     {
 
     }
-    public void UseSkill_2(RaycastHit hit)
+    public virtual void UseSkill_2(RaycastHit hit)
     {
         ViewOff();
         if (!isCC && (stat.GetCool(2) <= 0))
@@ -140,7 +143,7 @@ public class Unit : MonoBehaviour
     {
 
     }
-    public void UseSkill_3(RaycastHit hit)
+    public virtual void UseSkill_3(RaycastHit hit)
     {
         ViewOff();
         if (!isCC && (stat.GetCool(3) <= 0))
@@ -166,7 +169,7 @@ public class Unit : MonoBehaviour
         {
             if (Colliders[i] != null)
             {
-                Colliders[i].transform.LookAt(ZeroY(mousePosition));
+                Colliders[i].transform.LookAt(ZeroY(Colliders[i].transform.position + (mousePosition - Colliders[i].transform.position).normalized * 5));
             }
         }
     }
@@ -318,7 +321,44 @@ public class Unit : MonoBehaviour
             yield return null;
         }
     }
-    
+    public void CompulsionMove(Vector3 posi, float speed, float time, bool iscc)        //강제이동
+    {
+        if(iscc)
+        {
+            StartCC(time);
+            if (CompulsionMoveCorutine != null)
+            {
+                StopCoroutine(CompulsionMoveCorutine);
+            }
+            CompulsionMoveCorutine = StartCoroutine(CompulsionMove_(posi, speed, time));
+        }
+        else
+        {
+            if(CompulsionMoveCorutine != null)
+            {
+                StopCoroutine(CompulsionMoveCorutine);
+            }
+            CompulsionMoveCorutine = StartCoroutine(CompulsionMove_(posi, speed, time));
+        }
+    }
+    protected IEnumerator CompulsionMove_(Vector3 vector, float speed, float t)
+    {
+        Vector3 Goals = transform.position + vector;
+        float f = 0;
+        while (true)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, Goals, speed * Time.deltaTime);
+            f += Time.deltaTime;
+
+            if(f >= t || transform.position == Goals)
+            {
+                break;
+            }
+
+            yield return null;
+        }
+    }
+
     public virtual void AllStop()
     {
         if(EnemyFindCoroutine != null)

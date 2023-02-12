@@ -128,14 +128,14 @@ public class Stat : ScriptableObject
     }
 
     [SerializeField]
-    private float[] originCool;
+    private float[] originCool = new float[4];
     public float GetOriginCool(int index)
     {
         return originCool[index];
     }
 
     [SerializeField]
-    private float[] cool;
+    private float[] cool = new float[4];
     public float GetCool(int index)
     {
         return cool[index];
